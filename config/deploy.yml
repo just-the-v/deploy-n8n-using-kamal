@@ -4,7 +4,7 @@ service: n8n2
 image: <%= ENV['DOCKER_USERNAME'] %>/n8n2
 
 servers:
-  - <%= ENV['TARGET_IP'] %>
+  - <%= ENV['HOST_IP'] %>
 
 builder:
   arch: amd64
@@ -14,7 +14,7 @@ builder:
     image: app-build-cache
 
 ssh:
-  user: root
+  user: <%= ENV['HOST_USER'] %>
 
 registry:
   username: <%= ENV['DOCKER_USERNAME'] %>
@@ -43,7 +43,7 @@ env:
     DB_POSTGRESDB_PORT: 5432
     DB_POSTGRESDB_HOST: n8n2-db
     DB_POSTGRESDB_USER: n8n2_database
-    DB_POSTGRESDB_PASSWORD: <%= ENV['PASSWORD_DB'] %>
+    DB_POSTGRESDB_PASSWORD: <%= ENV['POSTGRES_PASSWORD'] %>
     DB_POSTGRESDB_SCHEMA: public
     N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
     N8N_RUNNERS_ENABLED: true
@@ -54,17 +54,17 @@ env:
     N8N_PROTOCOL: https
     WEBHOOK_URL: <%= "https://#{HOST}/" %>
     NODE_ENV: production
-    POSTGRES_PASSWORD: <%= ENV['PASSWORD_DB'] %>
+    POSTGRES_PASSWORD: <%= ENV['POSTGRES_PASSWORD'] %>
 
 accessories:
   db:
     image: postgres:17.4
-    host: <%= ENV['TARGET_IP'] %>
+    host: <%= ENV['HOST_IP'] %>
     port: <%= ENV['POSTGRES_PORT'] + ':5432' %>
     env:
       clear:
         POSTGRES_USER: n8n2_database
         POSTGRES_DB: n8n2_database
-        POSTGRES_PASSWORD: <%= ENV['PASSWORD_DB'] %>
+        POSTGRES_PASSWORD: <%= ENV['POSTGRES_PASSWORD'] %>
     directories:
       - data:/var/lib/postgresql/data

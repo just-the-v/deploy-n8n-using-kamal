@@ -30,10 +30,8 @@ jobs:
           ruby-version: 3.4.0
           bundler-cache: true
 
-      - name: Install dependencies
-        run: |
-          gem install specific_install
-          gem specific_install https://github.com/basecamp/kamal.git 
+      - name: Install Kamal
+        run: gem install kamal
 
       - uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -45,5 +43,10 @@ jobs:
         env:
           N8N_PORT: ${{ env.N8N_PORT }}
     
-      - name: Run deploy command
-        run: kamal setup
+      - name: Use Kamal to deploy n8n
+        run: |
+          if ! kamal accessory logs db 2>/dev/null; then
+            kamal setup
+          else
+            kamal deploy
+          fi

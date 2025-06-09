@@ -1,0 +1,47 @@
+name: deploy
+
+on:
+  workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_BUILDKIT: 1
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      HOST_IP: ${{ secrets.HOST_IP }}
+      HOST_USER: ${{ vars.HOST_USER }}
+      SUBDOMAIN: ${{ vars.SUBDOMAIN }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      TIMEZONE: ${{ vars.TIMEZONE }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      N8N_PORT: ${{ vars.N8N_PORT }}
+      POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.0
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: |
+          gem install specific_install
+          gem specific_install https://github.com/basecamp/kamal.git 
+
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+    
+      - name: Run deploy command
+        run: kamal setup

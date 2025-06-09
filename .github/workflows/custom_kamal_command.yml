@@ -1,0 +1,45 @@
+name: Run a custom Kamal Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Kamal command to run"
+        default: "kamal proxy reboot"
+
+jobs:
+  custom_kamal_command:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_BUILDKIT: 1
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      HOST_IP: ${{ secrets.HOST_IP }}
+      HOST_USER: ${{ vars.HOST_USER }}
+      SUBDOMAIN: ${{ vars.SUBDOMAIN }}
+      DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+      TIMEZONE: ${{ vars.TIMEZONE }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      N8N_PORT: ${{ vars.N8N_PORT }}
+      POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.0
+          bundler-cache: true
+
+      - name: Install Kamal
+        run: gem install kamal
+
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+      - name: Run KAMAL command
+        run: ${{ github.event.inputs.command }}
